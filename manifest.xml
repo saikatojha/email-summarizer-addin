@@ -3,24 +3,17 @@
   xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
   xsi:type="MailApp">
-
-  <!-- ═══════════════════════════════════════════════════
-       STEP: Replace YOUR_HOST_URL with your actual HTTPS
-       hosting URL (Azure Blob, GitHub Pages, etc.)
-       Example: https://myaccount.z13.web.core.windows.net
-       ═══════════════════════════════════════════════════ -->
 
   <Id>a7f4e231-9b2c-4d5e-8f6a-0123456789ab</Id>
   <Version>1.0.0.0</Version>
   <ProviderName>Netwoven Inc.</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Email Summarizer"/>
-  <Description DefaultValue="Summarize any email instantly with AI — powered by Copilot Studio"/>
+  <Description DefaultValue="Summarize any email instantly with AI powered by Copilot Studio"/>
 
-  <IconUrl DefaultValue="https://placehold.co/64x64/0078d4/ffffff?text=S&amp;font=open-sans"/>
-  <HighResolutionIconUrl DefaultValue="https://placehold.co/128x128/0078d4/ffffff?text=S&amp;font=open-sans"/>
+  <IconUrl DefaultValue="https://saikatojha.github.io/email-summarizer-addin/icon80.png"/>
+  <HighResolutionIconUrl DefaultValue="https://saikatojha.github.io/email-summarizer-addin/icon80.png"/>
   <SupportUrl DefaultValue="https://netwoven.com"/>
 
   <AppDomains>
@@ -54,7 +47,7 @@
   </Rule>
 
   <VersionOverrides
-    xmlns="http://schemas.microsoft.com/office/mailappversionoverrides"
+    xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
     xsi:type="VersionOverridesV1_0">
 
     <Requirements>
@@ -81,9 +74,9 @@
                     <Description resid="TaskpaneButton.Tooltip"/>
                   </Supertip>
                   <Icon>
-                    <bt:Image size="16"  resid="Icon.16x16"/>
-                    <bt:Image size="32"  resid="Icon.32x32"/>
-                    <bt:Image size="80"  resid="Icon.80x80"/>
+                    <bt:Image size="16" resid="Icon.16x16"/>
+                    <bt:Image size="32" resid="Icon.32x32"/>
+                    <bt:Image size="80" resid="Icon.80x80"/>
                   </Icon>
                   <Action xsi:type="ShowTaskpane">
                     <SourceLocation resid="Taskpane.Url"/>
@@ -101,17 +94,17 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16"  DefaultValue="https://placehold.co/16x16/0078d4/ffffff?text=S"/>
-        <bt:Image id="Icon.32x32"  DefaultValue="https://placehold.co/32x32/0078d4/ffffff?text=S"/>
-        <bt:Image id="Icon.80x80"  DefaultValue="https://placehold.co/80x80/0078d4/ffffff?text=S"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://saikatojha.github.io/email-summarizer-addin/icon16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://saikatojha.github.io/email-summarizer-addin/icon32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://saikatojha.github.io/email-summarizer-addin/icon80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url"  DefaultValue="https://saikatojha.github.io/email-summarizer-addin/commands.html"/>
-        <bt:Url id="Taskpane.Url"  DefaultValue="https://saikatojha.github.io/email-summarizer-addin/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://saikatojha.github.io/email-summarizer-addin/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://saikatojha.github.io/email-summarizer-addin/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GroupLabel"             DefaultValue="Netwoven AI"/>
-        <bt:String id="TaskpaneButton.Label"   DefaultValue="Summarize Email"/>
+        <bt:String id="GroupLabel" DefaultValue="Netwoven AI"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Summarize Email"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Instantly summarize this email using Copilot AI"/>
