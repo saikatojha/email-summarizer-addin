@@ -19,8 +19,8 @@
   <DisplayName DefaultValue="Email Summarizer"/>
   <Description DefaultValue="Summarize any email instantly with AI — powered by Copilot Studio"/>
 
-  <IconUrl DefaultValue="https://placehold.co/64x64/0078d4/ffffff?text=S&font=open-sans"/>
-  <HighResolutionIconUrl DefaultValue="https://placehold.co/128x128/0078d4/ffffff?text=S&font=open-sans"/>
+  <IconUrl DefaultValue="https://placehold.co/64x64/0078d4/ffffff?text=S&amp;font=open-sans"/>
+  <HighResolutionIconUrl DefaultValue="https://placehold.co/128x128/0078d4/ffffff?text=S&amp;font=open-sans"/>
   <SupportUrl DefaultValue="https://netwoven.com"/>
 
   <AppDomains>
