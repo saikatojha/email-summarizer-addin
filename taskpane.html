@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Email Summarizer</title>
+<script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    color: #323130;
+    background: #f3f2f1;
+    padding: 16px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .header-icon {
+    width: 28px;
+    height: 28px;
+    background: #0078d4;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #323130;
+    flex: 1;
+  }
+  .header-brand {
+    font-size: 11px;
+    color: #a19f9d;
+  }
+
+  /* ── Warning banner ── */
+  .config-warn {
+    display: none;
+    background: #fff4ce;
+    border: 1px solid #f0c93d;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #7a5c00;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .config-warn b { font-weight: 600; }
+
+  /* ── Email meta card ── */
+  .email-meta {
+    display: none;
+    background: white;
+    border: 1px solid #e1dfdd;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    color: #605e5c;
+    line-height: 1.5;
+  }
+  .meta-subject {
+    font-weight: 600;
+    color: #323130;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+  }
+
+  /* ── Primary button ── */
+  .btn-primary {
+    width: 100%;
+    padding: 10px 16px;
+    background: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+    letter-spacing: 0.1px;
+  }
+  .btn-primary:hover:not(:disabled) { background: #106ebe; }
+  .btn-primary:active:not(:disabled) { background: #005a9e; }
+  .btn-primary:disabled { background: #c8c6c4; cursor: not-allowed; }
+
+  /* ── Loading ── */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 28px 0 20px;
+    color: #605e5c;
+    font-size: 13px;
+  }
+  .spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e1dfdd;
+    border-top-color: #0078d4;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Result card ── */
+  .result {
+    display: none;
+    background: white;
+    border: 1px solid #e1dfdd;
+    border-radius: 4px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f3f2f1;
+  }
+  .result-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #0078d4;
+  }
+  .result-time {
+    font-size: 11px;
+    color: #a19f9d;
+  }
+
+  /* Markdown content styling */
+  .summary-content { font-size: 13px; line-height: 1.65; color: #323130; }
+  .summary-content h2, .summary-content h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0078d4;
+    margin: 12px 0 5px;
+  }
+  .summary-content h2:first-child, .summary-content h3:first-child { margin-top: 0; }
+  .summary-content p { margin-bottom: 8px; }
+  .summary-content ul, .summary-content ol { padding-left: 18px; margin: 4px 0 10px; }
+  .summary-content li { margin-bottom: 3px; }
+  .summary-content strong { font-weight: 600; }
+  .summary-content hr { border: none; border-top: 1px solid #e1dfdd; margin: 10px 0; }
+
+  /* ── Secondary button (copy) ── */
+  .btn-secondary {
+    width: 100%;
+    padding: 7px 12px;
+    background: transparent;
+    border: 1px solid #8a8886;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    color: #323130;
+    margin-top: 10px;
+    transition: background 0.1s;
+  }
+  .btn-secondary:hover { background: #f3f2f1; }
+
+  /* ── Error ── */
+  .error-box {
+    display: none;
+    background: #fde7e9;
+    border: 1px solid #f1707b;
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 14px;
+    color: #a4262c;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .error-box b { font-weight: 600; }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #c8c6c4;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">&#9889;</div>
+  <div class="header-title">Email Summarizer</div>
+  <div class="header-brand">Netwoven</div>
+</div>
+
+<div class="config-warn" id="config-warn">
+  <b>Setup needed:</b> Open <code>taskpane.html</code> and replace
+  <code>REPLACE_WITH_YOUR_DIRECT_LINE_SECRET</code> with your
+  Copilot Studio Direct Line secret.
+</div>
+
+<div class="email-meta" id="email-meta">
+  <div class="meta-subject" id="email-subject"></div>
+  <div id="email-from"></div>
+</div>
+
+<button class="btn-primary" id="summarize-btn" onclick="summarize()">
+  Summarize this email
+</button>
+
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  Analyzing email with Copilot&hellip;
+</div>
+
+<div class="error-box" id="error-box"></div>
+
+<div class="result" id="result">
+  <div class="result-header">
+    <span class="result-label">AI Summary</span>
+    <span class="result-time" id="result-time"></span>
+  </div>
+  <div class="summary-content" id="summary-content"></div>
+  <button class="btn-secondary" id="copy-btn" onclick="copyToClipboard()">
+    Copy summary
+  </button>
+</div>
+
+<div class="footer">Powered by Microsoft Copilot Studio</div>
+
+<script>
+  // ─────────────────────────────────────────────
+  // CONFIGURATION — replace this with your secret
+  // Get it from: Copilot Studio → Channels → Direct Line → Secret key
+  // ─────────────────────────────────────────────
+  const DL_SECRET = 'REPLACE_WITH_YOUR_DIRECT_LINE_SECRET';
+  // ─────────────────────────────────────────────
+
+  let lastSummaryText = '';
+
+  Office.onReady(function (info) {
+    if (info.host === Office.HostType.Outlook) {
+      if (DL_SECRET === 'REPLACE_WITH_YOUR_DIRECT_LINE_SECRET') {
+        document.getElementById('config-warn').style.display = 'block';
+      }
+      loadEmailMeta();
+    }
+  });
+
+  function loadEmailMeta() {
+    const item = Office.context.mailbox.item;
+    const subjectEl = document.getElementById('email-subject');
+    const fromEl    = document.getElementById('email-from');
+    const metaDiv   = document.getElementById('email-meta');
+
+    subjectEl.textContent = item.subject || '(No subject)';
+
+    const from = item.from;
+    if (from) {
+      fromEl.textContent = 'From: ' + (from.displayName
+        ? `${from.displayName} <${from.emailAddress}>`
+        : from.emailAddress);
+    }
+    metaDiv.style.display = 'block';
+  }
+
+  // ── Main action ──────────────────────────────
+  async function summarize() {
+    const btn = document.getElementById('summarize-btn');
+    btn.disabled = true;
+    setState('loading');
+
+    try {
+      const item    = Office.context.mailbox.item;
+      const subject = item.subject || '(No subject)';
+
+      item.body.getAsync(Office.CoercionType.Text, async function (result) {
+        if (result.status !== Office.AsyncResultStatus.Succeeded) {
+          showError('Could not read email body: ' + result.error.message);
+          btn.disabled = false;
+          setState('idle');
+          return;
+        }
+
+        // Trim to 8 000 chars so we don't blow the context window
+        const body = result.value.trim().substring(0, 8000);
+        const prompt = `Summarize this email:\n\nSubject: ${subject}\n\n${body}`;
+
+        try {
+          const summary = await callCopilotStudio(prompt);
+          showResult(summary);
+        } catch (err) {
+          showError(err.message);
+        } finally {
+          btn.disabled = false;
+          setState('idle');
+        }
+      });
+    } catch (err) {
+      showError(err.message);
+      btn.disabled = false;
+      setState('idle');
+    }
+  }
+
+  // ── Copilot Studio via Direct Line ───────────
+  async function callCopilotStudio(message) {
+    // 1 — Start a conversation
+    const convRes = await fetch(
+      'https://directline.botframework.com/v3/directline/conversations',
+      { method: 'POST', headers: { Authorization: 'Bearer ' + DL_SECRET } }
+    );
+    if (!convRes.ok) {
+      const txt = await convRes.text();
+      throw new Error(
+        'Could not connect to Copilot Studio agent (HTTP ' + convRes.status + '). ' +
+        'Check your Direct Line secret and that the agent is published. Details: ' + txt
+      );
+    }
+    const { conversationId, token } = await convRes.json();
+
+    // 2 — Send the email text as a message
+    const sendRes = await fetch(
+      `https://directline.botframework.com/v3/directline/conversations/${conversationId}/activities`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'message',
+          from: { id: 'outlookuser', name: 'Outlook User' },
+          text: message
+        })
+      }
+    );
+    if (!sendRes.ok) throw new Error('Failed to send message to Copilot Studio agent.');
+
+    // 3 — Poll for the bot response (up to ~37 s)
+    return await pollForResponse(conversationId, token);
+  }
+
+  async function pollForResponse(conversationId, token) {
+    let watermark  = null;
+    const maxTries = 25;
+
+    for (let i = 0; i < maxTries; i++) {
+      await sleep(1500);
+
+      const url =
+        `https://directline.botframework.com/v3/directline/conversations/${conversationId}/activities` +
+        (watermark ? `?watermark=${watermark}` : '');
+
+      const res = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) continue;
+
+      const data    = await res.json();
+      watermark     = data.watermark;
+      const botMsgs = (data.activities || []).filter(
+        a => a.from?.role === 'bot' && a.type === 'message' && a.text?.trim()
+      );
+
+      if (botMsgs.length > 0) {
+        return botMsgs[botMsgs.length - 1].text;
+      }
+    }
+    throw new Error('Agent did not respond within 37 seconds. Try again or check the agent is responding in Copilot Studio test chat.');
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ── UI helpers ───────────────────────────────
+  function setState(state) {
+    document.getElementById('loading').style.display =
+      state === 'loading' ? 'block' : 'none';
+  }
+
+  function showResult(markdown) {
+    lastSummaryText = markdown;
+
+    const contentEl = document.getElementById('summary-content');
+    if (typeof marked !== 'undefined') {
+      contentEl.innerHTML = marked.parse(markdown);
+    } else {
+      contentEl.textContent = markdown;
+    }
+
+    const now = new Date();
+    document.getElementById('result-time').textContent =
+      now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('error-box').style.display = 'none';
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-box');
+    el.innerHTML = '<b>Error:</b> ' + msg;
+    el.style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+  }
+
+  function copyToClipboard() {
+    if (!lastSummaryText) return;
+    navigator.clipboard.writeText(lastSummaryText).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied to clipboard!';
+      setTimeout(() => { btn.textContent = 'Copy summary'; }, 2000);
+    }).catch(() => {
+      // Fallback for older contexts
+      const ta = document.createElement('textarea');
+      ta.value = lastSummaryText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy summary'; }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
